@@ -1,0 +1,27 @@
+name: Build vault plugins
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+
+jobs:
+
+  github-secrets:
+    permissions:
+      contents: write
+    uses: SonarSource/re-vault-plugins/.github/workflows/go-build.yaml@feat/me/init
+    with:
+      name: github-secrets
+      repository: martinbaillie/vault-plugin-secrets-github
+      ref: 593309450623c675524942ae723bc90ee2b92247 # tag: v1.3.0
+
+  artifactory-secrets:
+    permissions:
+      contents: write
+    uses: SonarSource/re-vault-plugins/.github/workflows/go-build.yaml@feat/me/init
+    with:
+      name: artifactory-secrets
+      repository: jfrog/artifactory-secrets-plugin
+      ref: 78b64136652fd15f278cac0888227b4cbbf8d16b # tag: v0.1.2

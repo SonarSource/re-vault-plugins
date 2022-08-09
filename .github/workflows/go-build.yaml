@@ -1,0 +1,63 @@
+name: Build vault plugin
+on:
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: build ${{ matrix.goosarch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goosarch:
+          - 'linux/amd64'
+          - 'linux/arm64'
+    steps:
+    - id: env
+      name: setup env
+      run: |
+          GOOSARCH=${{ matrix.goosarch }}
+          GOOS=${GOOSARCH%/*}
+          GOARCH=${GOOSARCH#*/}
+          echo "GOOS=$GOOS" >> $GITHUB_ENV
+          echo "GOARCH=$GOARCH" >> $GITHUB_ENV
+          echo "::set-output name=filename::${{ inputs.name }}-${GOOS}-${GOARCH}"
+    - name: checkout plugin repo
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
+    - name: setup go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.18'
+        check-latest: true
+        cache: true
+    - name: print go version
+      run: go version
+    - name: build plugin
+      run: go build -o ${{ steps.env.outputs.filename }}
+    - name: store build artifact
+      if: github.event_name != 'release'
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.env.outputs.filename }}
+        path: ${{ steps.env.outputs.filename }}
+    - name: store release artifact
+      if: github.event_name == 'release'
+      run: >
+        gh --repo "${GITHUB_REPOSITORY}"
+        release upload
+        "${{ github.event.release.tag_name }}"
+        "${{ steps.env.outputs.filename }}"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
