@@ -11,6 +11,10 @@ on:
       ref:
         required: true
         type: string
+      go-package:
+        required: false
+        type: string
+        default: '.'
 
 jobs:
   build:
@@ -45,7 +49,7 @@ jobs:
     - name: print go version
       run: go version
     - name: build plugin
-      run: go build -o ${{ steps.env.outputs.filename }}
+      run: go build -o "${{ steps.env.outputs.filename }}" "${{ inputs.go-package }}"
     - name: generate hash
       run: >
         sha256sum "${{ steps.env.outputs.filename }}"
