@@ -25,3 +25,4 @@ jobs:
       name: artifactory-secrets
       repository: jfrog/artifactory-secrets-plugin
       ref: 78b64136652fd15f278cac0888227b4cbbf8d16b # tag: v0.1.2
+      go-package: cmd/artifactory/main.go
